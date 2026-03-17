@@ -1,0 +1,1693 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>MOODIFY</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  :root {
+    --bg: #dde3ee;
+    --bg2: #e4e9f4;
+    --card: #eef1f8;
+    --card2: #f4f6fb;
+    --accent: #7b8ec8;
+    --accent2: #9aaad8;
+    --accent-dark: #5a6fa8;
+    --accent-glow: rgba(123,142,200,0.3);
+    --text: #2d3561;
+    --text2: #6b7ab8;
+    --text3: #9aa3c8;
+    --white: #ffffff;
+    --shadow: rgba(100,120,180,0.18);
+    --shadow2: rgba(100,120,180,0.09);
+    --radius: 24px;
+    --radius-sm: 16px;
+    --transition: 0.32s cubic-bezier(0.4,0,0.2,1);
+  }
+
+  body {
+    background: linear-gradient(135deg, #b8c4dc 0%, #c8d0e8 100%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    font-family: 'Nunito', sans-serif;
+    overflow: hidden;
+  }
+
+  /* Phone Shell */
+  .phone {
+    width: 390px;
+    height: 844px;
+    background: var(--bg);
+    border-radius: 50px;
+    overflow: hidden;
+    position: relative;
+    box-shadow:
+      0 40px 80px rgba(80,100,160,0.3),
+      0 0 0 8px rgba(255,255,255,0.5),
+      0 0 0 10px rgba(180,195,225,0.6),
+      inset 0 1px 0 rgba(255,255,255,0.8);
+  }
+
+  /* Screens */
+  .screen {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(30px);
+    transition: opacity 0.32s cubic-bezier(0.4,0,0.2,1), transform 0.32s cubic-bezier(0.4,0,0.2,1);
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: none;
+  }
+  .screen::-webkit-scrollbar { display: none; }
+  .screen.active { opacity: 1; pointer-events: all; transform: translateX(0); }
+  .screen.slide-left { opacity: 0; transform: translateX(-30px); }
+
+  /* Soft orbs for background depth */
+  .orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(70px);
+    pointer-events: none;
+  }
+
+  /* ===================== LOGIN SCREEN ===================== */
+  #screen-login {
+    background: linear-gradient(160deg, #8b9fd4 0%, #a8b8e0 45%, #bdc9e8 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding-top: 72px;
+  }
+  #screen-login .orb1 { width:240px;height:240px;background:#c5d0ee;top:-80px;left:-60px;opacity:0.5; }
+  #screen-login .orb2 { width:160px;height:160px;background:#a8b8e0;bottom:80px;right:-50px;opacity:0.4; }
+  .login-logo {
+    font-family: 'Space Mono', monospace;
+    font-size: 42px; font-weight: 700; color: white;
+    letter-spacing: 6px; margin-bottom: 6px;
+    animation: fadeDown 0.7s ease both;
+    position: relative; z-index: 1;
+    text-shadow: 0 4px 24px rgba(60,80,160,0.25);
+  }
+  .login-tagline {
+    color: rgba(255,255,255,0.75);
+    font-size: 12px; font-weight: 700;
+    letter-spacing: 3px; text-transform: uppercase;
+    margin-bottom: 36px;
+    position: relative; z-index: 1;
+    animation: fadeDown 0.7s 0.08s ease both;
+  }
+  .login-card {
+    background: rgba(255,255,255,0.88);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,0.95);
+    border-radius: 28px; width: 330px;
+    padding: 32px 28px 28px;
+    box-shadow: 0 20px 60px rgba(80,100,160,0.2), inset 0 1px 0 white;
+    animation: fadeUp 0.7s 0.15s ease both;
+    position: relative; z-index: 1;
+  }
+  .login-card h2 { color: var(--accent); font-size: 22px; font-weight: 800; text-align: center; margin-bottom: 22px; }
+  .login-input {
+    background: #edf0f8;
+    border: 1.5px solid transparent;
+    border-radius: 50px; width: 100%;
+    padding: 14px 18px 14px 44px;
+    font-family: 'Nunito', sans-serif; font-size: 14px; color: var(--text);
+    margin-bottom: 12px; outline: none; transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .login-input:focus { border-color: var(--accent2); box-shadow: 0 0 0 3px rgba(123,142,200,0.15); }
+  .input-wrap { position: relative; }
+  .input-wrap .icon { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); font-size: 15px; color: var(--text3); }
+  .forgot { text-align: right; color: var(--accent); font-size: 12px; font-weight: 700; margin: 2px 0 16px; cursor: pointer; }
+  .btn-main {
+    background: linear-gradient(135deg, #7b8ec8 0%, #9aaad8 100%);
+    color: white; border: none; border-radius: 50px; width: 100%; padding: 15px;
+    font-family: 'Nunito', sans-serif; font-size: 16px; font-weight: 800;
+    cursor: pointer; transition: transform 0.15s, box-shadow 0.15s;
+    box-shadow: 0 8px 24px rgba(123,142,200,0.45);
+  }
+  .btn-main:active { transform: scale(0.97); }
+  .signup-text { text-align: center; color: var(--text2); font-size: 13px; font-weight: 600; margin: 14px 0 8px; cursor: pointer; }
+  .signup-text span { color: var(--accent); font-weight: 800; }
+  .divider { display: flex; align-items: center; gap: 10px; margin: 10px 0; }
+  .divider span { color: var(--text3); font-size: 12px; font-weight: 700; white-space: nowrap; }
+  .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: #d8deee; }
+  .continue-text { text-align: center; color: var(--text3); font-size: 12px; font-weight: 600; margin-bottom: 12px; }
+  .social-btns { display: flex; gap: 12px; justify-content: center; }
+  .social-btn {
+    width: 64px; height: 48px;
+    background: #edf0f8; border: 1.5px solid #dde3ee;
+    border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; font-size: 22px;
+    transition: transform 0.15s, background 0.15s;
+    box-shadow: 0 2px 8px var(--shadow2);
+  }
+  .social-btn:active { transform: scale(0.93); background: #e0e6f4; }
+  .login-mascot { margin-top: 28px; animation: fadeUp 0.7s 0.3s ease both; position: relative; z-index: 1; }
+  .mascot-svg { width: 120px; }
+
+  /* ===================== HOME SCREEN ===================== */
+  #screen-home {
+    background: linear-gradient(180deg, #dde3ee 0%, #d4dcea 100%);
+    padding-bottom: 90px;
+  }
+  #screen-home .orb1 { width:300px;height:300px;background:#bcc8e8;top:-100px;right:-80px;opacity:0.6; }
+  #screen-home .orb2 { width:220px;height:220px;background:#c8d4f0;bottom:180px;left:-80px;opacity:0.4; }
+  .top-bar {
+    padding: 54px 22px 12px;
+    display: flex; align-items: center; justify-content: space-between;
+    position: relative; z-index: 1;
+  }
+  .top-bar .brand { font-family: 'Space Mono', monospace; font-size: 20px; font-weight: 700; color: var(--accent); letter-spacing: 3px; }
+  .top-bar .greeting { color: var(--text3); font-size: 13px; font-weight: 700; }
+
+  /* Mood card */
+  .mood-card {
+    margin: 4px 16px 14px;
+    background: linear-gradient(135deg, #f2f5fc 0%, #eaeff9 100%);
+    border: 1px solid rgba(255,255,255,0.9);
+    border-radius: var(--radius); padding: 22px 22px 20px;
+    box-shadow: 0 8px 32px var(--shadow2), 0 2px 8px rgba(100,120,180,0.06), inset 0 1px 0 white;
+    position: relative; z-index: 1;
+  }
+  .mood-card h3 { font-size: 18px; font-weight: 800; color: var(--text); margin-bottom: 16px; }
+  .mood-slider-row { display: flex; align-items: center; gap: 12px; }
+  .mood-num {
+    width: 34px; height: 34px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-weight: 800; font-size: 14px; flex-shrink: 0;
+    box-shadow: 0 4px 12px var(--accent-glow);
+  }
+  input[type=range] {
+    -webkit-appearance: none; flex: 1; height: 6px;
+    background: linear-gradient(to right, var(--accent) 20%, #d8deee 20%);
+    border-radius: 6px; outline: none;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 22px; height: 22px; background: white;
+    border: 3px solid var(--accent); border-radius: 50%; cursor: pointer;
+    box-shadow: 0 2px 8px var(--accent-glow);
+  }
+  .gen-btn {
+    margin-top: 16px;
+    background: linear-gradient(135deg, #7b8ec8 0%, #9aaad8 100%);
+    color: white; border: none; border-radius: 50px; width: 100%; padding: 13px;
+    font-family: 'Nunito', sans-serif; font-size: 15px; font-weight: 800;
+    cursor: pointer; transition: transform 0.15s, box-shadow 0.15s;
+    box-shadow: 0 6px 20px rgba(123,142,200,0.4);
+  }
+  .gen-btn:active { transform: scale(0.97); }
+
+  /* Mini player */
+  .mini-player {
+    margin: 0 16px 14px;
+    background: linear-gradient(135deg, #e2eaf8 0%, #d4dff0 100%);
+    border: 1px solid rgba(255,255,255,0.85);
+    border-radius: var(--radius); padding: 16px;
+    display: flex; gap: 14px; align-items: center;
+    box-shadow: 0 10px 32px var(--shadow2), inset 0 1px 0 rgba(255,255,255,0.8);
+    cursor: pointer; transition: transform 0.18s, box-shadow 0.18s;
+    position: relative; overflow: hidden; z-index: 1;
+  }
+  .mini-player:active { transform: scale(0.98); }
+  .turntable-mini { width: 76px; height: 76px; flex-shrink: 0; }
+  .turntable-mini svg { width: 76px; height: 76px; }
+  .vinyl { animation: spin 4s linear infinite paused; transform-origin: center; }
+  .vinyl.playing { animation-play-state: running; }
+  .mini-info { flex: 1; }
+  .mini-info .track-name { font-size: 15px; font-weight: 800; color: var(--text); line-height: 1.3; }
+  .mini-info .genre { font-size: 12px; color: var(--text2); margin-top: 2px; }
+  .ai-badge {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: white; font-size: 10px; font-weight: 700;
+    padding: 3px 10px; border-radius: 50px; display: inline-block; margin-top: 6px;
+    box-shadow: 0 2px 8px var(--accent-glow);
+  }
+  .mini-progress { position: absolute; bottom: 0; left: 0; right: 0; height: 3px; background: rgba(123,142,200,0.15); }
+  .mini-progress-fill { height: 100%; background: linear-gradient(to right, var(--accent), var(--accent2)); width: 25%; border-radius: 2px; transition: width 0.5s; }
+  .play-mini-btn {
+    width: 40px; height: 40px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; cursor: pointer; color: white; font-size: 14px;
+    box-shadow: 0 4px 14px var(--accent-glow); transition: transform 0.15s;
+  }
+  .play-mini-btn:active { transform: scale(0.92); }
+
+  /* Bottom row */
+  .home-row { display: flex; gap: 12px; margin: 0 16px 14px; position: relative; z-index: 1; }
+
+  /* Pomodoro mini */
+  .pomodoro-mini {
+    flex: 1;
+    background: linear-gradient(135deg, #7b8ec8 0%, #6070aa 100%);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: var(--radius); padding: 18px 16px;
+    cursor: pointer; transition: transform 0.18s;
+    box-shadow: 0 10px 32px rgba(100,120,180,0.35);
+  }
+  .pomodoro-mini:active { transform: scale(0.97); }
+  .pomodoro-mini h4 { color: rgba(255,255,255,0.75); font-size: 11px; font-weight: 700; margin-bottom: 6px; letter-spacing: 1.5px; text-transform: uppercase; }
+  .pomodoro-mini .pomo-time { font-family: 'Space Mono', monospace; font-size: 28px; color: white; font-weight: 700; }
+  .pomo-btns { display: flex; gap: 6px; margin-top: 10px; }
+  .pomo-btn-sm {
+    background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.25);
+    border-radius: 50px; color: white;
+    font-family: 'Nunito', sans-serif; font-size: 11px; font-weight: 700;
+    padding: 5px 10px; cursor: pointer; transition: background 0.15s;
+  }
+  .pomo-btn-sm:active { background: rgba(255,255,255,0.35); }
+
+  /* Mascot card */
+  .mascot-card {
+    flex: 1;
+    background: linear-gradient(135deg, #c8d4f0 0%, #b8c8e8 100%);
+    border: 1px solid rgba(255,255,255,0.7);
+    border-radius: var(--radius);
+    display: flex; align-items: center; justify-content: center; padding: 10px;
+    box-shadow: 0 10px 32px var(--shadow2);
+  }
+  .mascot-card .mascot-svg { width: 100px; }
+
+  /* Mood modes */
+  .mood-modes { margin: 0 16px; display: flex; gap: 10px; position: relative; z-index: 1; }
+  .mode-card {
+    flex: 1;
+    background: linear-gradient(135deg, #f4f6fb 0%, #edf0f8 100%);
+    border: 1.5px solid rgba(255,255,255,0.9);
+    border-radius: var(--radius-sm); padding: 14px 10px; text-align: center;
+    cursor: pointer; transition: transform 0.15s, border-color 0.15s, background 0.15s;
+    box-shadow: 0 4px 16px var(--shadow2);
+  }
+  .mode-card:active { transform: scale(0.96); }
+  .mode-card.active-mode { border-color: var(--accent); background: linear-gradient(135deg, #dce4f5, #d0daf0); box-shadow: 0 4px 16px var(--accent-glow); }
+  .mode-card span { display: block; color: var(--text2); font-size: 11px; font-weight: 800; margin-top: 6px; }
+  .mode-card.active-mode span { color: var(--accent); }
+  .mode-icon { font-size: 22px; }
+
+  /* ===================== MUSIC SCREEN ===================== */
+  #screen-music {
+    background: linear-gradient(180deg, #c8d4ee 0%, #d8e2f4 50%, #e4ecf8 100%);
+    display: flex; flex-direction: column;
+  }
+  #screen-music .orb1 { width:320px;height:320px;background:#a8b8e0;top:-100px;left:50%;transform:translateX(-50%);opacity:0.5; }
+  .music-handle { width: 40px; height: 4px; background: rgba(100,120,180,0.25); border-radius: 3px; margin: 14px auto 0; }
+  .music-turntable {
+    flex: 1; display: flex; align-items: center; justify-content: center;
+    padding: 24px 30px; position: relative; z-index: 1;
+  }
+  .music-turntable svg { width: 230px; height: 230px; filter: drop-shadow(0 16px 40px rgba(100,120,180,0.35)) drop-shadow(0 4px 12px rgba(0,0,0,0.15)); }
+  .music-info { padding: 0 30px 10px; position: relative; z-index: 1; }
+  .music-title { font-size: 24px; font-weight: 900; color: var(--text); font-family: 'Space Mono', monospace; line-height: 1.2; }
+  .music-genre { font-size: 14px; color: var(--text2); margin-top: 4px; }
+  .music-badge { margin-top: 8px; }
+  .music-progress-wrap { padding: 16px 30px 0; position: relative; z-index: 1; }
+  .music-progress-bar {
+    -webkit-appearance: none; width: 100%; height: 5px;
+    background: linear-gradient(to right, var(--text) 25%, rgba(100,120,180,0.2) 25%);
+    border-radius: 5px; outline: none; cursor: pointer;
+  }
+  .music-progress-bar::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 16px; height: 16px; background: var(--text);
+    border-radius: 50%; cursor: pointer; box-shadow: 0 2px 6px rgba(60,80,140,0.3);
+  }
+  .music-times { display: flex; justify-content: space-between; padding: 6px 30px 0; color: var(--text3); font-size: 12px; font-weight: 600; position: relative; z-index: 1; }
+  .music-controls { display: flex; align-items: center; justify-content: center; gap: 32px; padding: 16px 30px 14px; position: relative; z-index: 1; }
+  .ctrl-btn {
+    background: none; border: none; cursor: pointer; color: var(--text2); font-size: 24px;
+    transition: transform 0.15s, color 0.15s; display: flex; align-items: center; justify-content: center;
+  }
+  .ctrl-btn:active { transform: scale(0.88); color: var(--text); }
+  .ctrl-play {
+    width: 64px; height: 64px;
+    background: linear-gradient(135deg, var(--text) 0%, #3d4a80 100%);
+    border-radius: 50%; color: white; font-size: 24px;
+    display: flex; align-items: center; justify-content: center;
+    border: none; cursor: pointer; transition: transform 0.15s;
+    box-shadow: 0 8px 28px rgba(45,53,97,0.4), 0 0 0 8px rgba(100,120,180,0.12);
+  }
+  .ctrl-play:active { transform: scale(0.93); }
+  .volume-row { display: flex; align-items: center; gap: 12px; padding: 0 30px 20px; position: relative; z-index: 1; }
+  .vol-icon { font-size: 16px; color: var(--text3); cursor: pointer; }
+  .vol-slider {
+    -webkit-appearance: none; flex: 1; height: 4px;
+    background: linear-gradient(to right, var(--accent2) 60%, rgba(100,120,180,0.2) 60%);
+    border-radius: 4px; outline: none; cursor: pointer;
+  }
+  .vol-slider::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 14px; height: 14px; background: var(--accent);
+    border-radius: 50%; cursor: pointer; box-shadow: 0 1px 4px var(--accent-glow);
+  }
+  .music-back-btn {
+    position: absolute; top: 52px; left: 20px;
+    background: rgba(255,255,255,0.6); border: 1px solid rgba(255,255,255,0.8);
+    border-radius: 50%; width: 40px; height: 40px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; font-size: 18px; color: var(--text);
+    backdrop-filter: blur(10px); transition: transform 0.15s, background 0.15s; z-index: 5;
+  }
+  .music-back-btn:active { transform: scale(0.9); background: rgba(255,255,255,0.8); }
+  .music-playlist-btn {
+    position: absolute; top: 52px; right: 20px;
+    background: rgba(255,255,255,0.6); border: 1px solid rgba(255,255,255,0.8);
+    border-radius: 50%; width: 40px; height: 40px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; font-size: 16px; color: var(--text);
+    backdrop-filter: blur(10px); transition: transform 0.15s; z-index: 5;
+  }
+  .music-playlist-btn:active { transform: scale(0.9); }
+  .playlist-drawer {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    background: rgba(240,244,252,0.97);
+    backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgba(255,255,255,0.8);
+    border-radius: 28px 28px 0 0; padding: 12px 20px 36px;
+    transform: translateY(100%);
+    transition: transform 0.4s cubic-bezier(0.25,0.46,0.45,0.94);
+    max-height: 70%; z-index: 20;
+    box-shadow: 0 -8px 40px rgba(100,120,180,0.15);
+  }
+  .playlist-drawer.open { transform: translateY(0); }
+  .playlist-handle { width: 40px; height: 4px; background: #d0d8ee; border-radius: 2px; margin: 0 auto 14px; cursor: pointer; }
+  .playlist-title { font-size: 14px; font-weight: 800; color: var(--text); margin-bottom: 12px; padding-left: 4px; }
+  .playlist-list { display: flex; flex-direction: column; gap: 4px; overflow-y: auto; max-height: 340px; scrollbar-width: none; }
+  .playlist-list::-webkit-scrollbar { display: none; }
+  .playlist-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 14px; border-radius: 14px; cursor: pointer;
+    transition: background 0.15s, transform 0.12s; border: 1px solid transparent;
+  }
+  .playlist-item:active { transform: scale(0.98); }
+  .playlist-item:hover { background: rgba(123,142,200,0.08); }
+  .playlist-item.playing { background: rgba(123,142,200,0.12); border-color: rgba(123,142,200,0.25); }
+  .playlist-num {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: #e8ecf8; display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 800; color: var(--text2); flex-shrink: 0;
+  }
+  .playlist-item.playing .playlist-num { background: var(--accent); color: white; box-shadow: 0 2px 8px var(--accent-glow); }
+  .playlist-item-info { flex: 1; min-width: 0; }
+  .playlist-item-title { font-size: 13px; font-weight: 800; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .playlist-item-artist { font-size: 11px; color: var(--text3); margin-top: 1px; }
+
+  /* ===================== POMODORO SCREEN ===================== */
+  #screen-pomodoro {
+    background: linear-gradient(160deg, #a8b8e0 0%, #c0ceea 45%, #d4dff4 100%);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    overflow: hidden;
+  }
+  #screen-pomodoro .orb1 { width:320px;height:320px;background:#9aaad8;top:50%;left:50%;transform:translate(-50%,-50%);opacity:0.35; }
+  .pomo-back-btn {
+    position: absolute; top: 52px; left: 20px;
+    background: rgba(255,255,255,0.4); border: 1px solid rgba(255,255,255,0.6);
+    border-radius: 50%; width: 40px; height: 40px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; font-size: 18px; color: white;
+    backdrop-filter: blur(10px); transition: transform 0.15s;
+  }
+  .pomo-back-btn:active { transform: scale(0.9); }
+  .pomo-fullscreen-btn {
+    position: absolute; top: 52px; right: 20px;
+    background: rgba(255,255,255,0.4); border: 1px solid rgba(255,255,255,0.6);
+    border-radius: 50%; width: 40px; height: 40px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; font-size: 15px; color: white;
+    backdrop-filter: blur(10px); transition: transform 0.15s;
+  }
+  .pomo-fullscreen-btn:active { transform: scale(0.9); }
+  .pomo-clock-card {
+    background: rgba(255,255,255,0.28);
+    backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,0.6);
+    border-radius: 36px; width: 300px; padding: 44px 32px 40px;
+    display: flex; flex-direction: column; align-items: center;
+    box-shadow: 0 20px 60px rgba(80,100,160,0.2), inset 0 1px 0 rgba(255,255,255,0.7);
+    margin-bottom: 28px; position: relative; z-index: 1;
+  }
+  .pomo-label { font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.85); letter-spacing: 4px; text-transform: uppercase; margin-bottom: 22px; }
+  .pomo-clock {
+    font-family: 'Space Mono', monospace; font-size: 72px; font-weight: 700;
+    color: white; letter-spacing: 4px; line-height: 1;
+    text-shadow: 0 4px 24px rgba(60,80,160,0.3);
+  }
+  .pomo-controls { display: flex; gap: 12px; position: relative; z-index: 1; }
+  .pomo-ctrl-btn {
+    background: rgba(255,255,255,0.28); border: 1px solid rgba(255,255,255,0.5);
+    border-radius: 50px; color: white;
+    font-family: 'Nunito', sans-serif; font-size: 14px; font-weight: 800;
+    padding: 12px 22px; cursor: pointer;
+    transition: transform 0.15s, background 0.15s; backdrop-filter: blur(8px);
+    box-shadow: 0 4px 12px rgba(80,100,160,0.15);
+  }
+  .pomo-ctrl-btn:active { transform: scale(0.95); background: rgba(255,255,255,0.45); }
+  .pomo-set-time {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border: none; border-radius: 50px; color: white;
+    font-family: 'Nunito', sans-serif; font-size: 15px; font-weight: 800;
+    padding: 14px 48px; cursor: pointer; transition: transform 0.15s;
+    box-shadow: 0 8px 28px rgba(100,120,180,0.45);
+    position: relative; z-index: 1; margin-top: 24px;
+  }
+  .pomo-set-time:active { transform: scale(0.97); }
+
+  /* Full screen Pomodoro */
+  #screen-pomodoro-full {
+    background: linear-gradient(160deg, #a8b8e0 0%, #c0ceea 60%, #d4dff4 100%);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    overflow: hidden;
+  }
+  #screen-pomodoro-full .orb1 { width:360px;height:360px;background:#9aaad8;top:50%;left:50%;transform:translate(-50%,-50%);opacity:0.3; }
+  .pomo-full-clock {
+    font-family: 'Space Mono', monospace; font-size: 96px; font-weight: 700; color: white;
+    text-shadow: 0 6px 40px rgba(60,80,160,0.3); letter-spacing: 6px; line-height: 1;
+    margin-bottom: 56px; position: relative; z-index: 1;
+  }
+  .pomo-full-close {
+    position: absolute; bottom: 40px;
+    background: rgba(255,255,255,0.3); border: 1px solid rgba(255,255,255,0.55);
+    border-radius: 50%; width: 50px; height: 50px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; font-size: 20px; color: white;
+    backdrop-filter: blur(8px); transition: transform 0.15s; z-index: 1;
+  }
+  .pomo-full-close:active { transform: scale(0.9); }
+
+  /* Set time modal */
+  .modal-overlay {
+    position: absolute; inset: 0; background: rgba(80,100,160,0.3);
+    backdrop-filter: blur(6px); display: flex; align-items: flex-end; justify-content: center;
+    z-index: 100; opacity: 0; pointer-events: none; transition: opacity 0.3s;
+  }
+  .modal-overlay.open { opacity: 1; pointer-events: all; }
+  .modal-sheet {
+    background: white; border-radius: 28px 28px 0 0; padding: 24px 24px 40px; width: 100%;
+    transform: translateY(100%); transition: transform 0.4s cubic-bezier(0.4,0,0.2,1);
+    box-shadow: 0 -8px 40px rgba(80,100,160,0.15);
+  }
+  .modal-overlay.open .modal-sheet { transform: translateY(0); }
+  .modal-handle { width: 40px; height: 4px; background: #d8deee; border-radius: 2px; margin: 0 auto 20px; }
+  .modal-title { font-size: 18px; font-weight: 800; color: var(--text); margin-bottom: 20px; text-align: center; }
+  .time-input-row { display: flex; gap: 10px; align-items: center; justify-content: center; }
+  .time-input {
+    background: #edf0f8; border: 2px solid var(--accent2); border-radius: 14px;
+    font-family: 'Space Mono', monospace; font-size: 36px; font-weight: 700;
+    color: var(--text); width: 100px; text-align: center; padding: 12px; outline: none;
+  }
+  .time-input:focus { border-color: var(--accent); }
+  .time-sep { font-family: 'Space Mono', monospace; font-size: 36px; font-weight: 700; color: var(--text2); }
+  .modal-set-btn {
+    margin-top: 24px; background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: white; border: none; border-radius: 50px; width: 100%; padding: 15px;
+    font-family: 'Nunito', sans-serif; font-size: 16px; font-weight: 800; cursor: pointer;
+    box-shadow: 0 6px 20px rgba(123,142,200,0.4); transition: transform 0.15s;
+  }
+  .modal-set-btn:active { transform: scale(0.97); }
+
+  /* ===================== AI CHAT SCREEN ===================== */
+  #screen-chat {
+    background: linear-gradient(180deg, #dde3ee 0%, #d4dcea 100%);
+    display: flex; flex-direction: column; padding-bottom: 80px;
+  }
+  #screen-chat .orb1 { width:200px;height:200px;background:#bcc8e8;top:-60px;right:-40px;opacity:0.5; }
+  .chat-header { padding: 52px 22px 0; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; position: relative; z-index: 1; }
+  .chat-header .brand { font-family: 'Space Mono', monospace; font-size: 18px; font-weight: 700; color: var(--accent); letter-spacing: 2px; }
+  .chat-title-pill {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: white; font-size: 14px; font-weight: 800;
+    padding: 10px 24px; border-radius: 50px;
+    margin: 12px 22px 10px; text-align: center; flex-shrink: 0;
+    box-shadow: 0 4px 16px var(--accent-glow);
+    position: relative; z-index: 1;
+  }
+  .chat-messages {
+    flex: 1; overflow-y: auto; padding: 8px 16px 12px;
+    display: flex; flex-direction: column; gap: 12px;
+    scrollbar-width: none; min-height: 0; position: relative; z-index: 1;
+  }
+  .chat-messages::-webkit-scrollbar { display: none; }
+  .msg { display: flex; align-items: flex-end; gap: 8px; }
+  .msg.user { flex-direction: row-reverse; }
+  .msg-avatar {
+    width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0;
+    overflow: hidden; background: var(--accent2);
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 3px 10px var(--accent-glow);
+  }
+  .msg-avatar svg { width: 40px; height: 40px; }
+  .msg-bubble {
+    max-width: 230px; padding: 12px 16px; border-radius: 20px;
+    font-size: 14px; line-height: 1.5; color: var(--text);
+    background: rgba(255,255,255,0.88);
+    border: 1px solid rgba(255,255,255,0.95);
+    box-shadow: 0 2px 12px var(--shadow2);
+    backdrop-filter: blur(8px);
+  }
+  .msg.user .msg-bubble {
+    background: linear-gradient(135deg, #d4dcf4, #c8d4ee);
+    border-color: rgba(255,255,255,0.7);
+  }
+  .msg-bubble.typing { display: flex; gap: 5px; align-items: center; padding: 16px 20px; min-width: 64px; }
+  .dot { width: 9px; height: 9px; background: var(--accent2); border-radius: 50%; animation: bounce 1.2s ease infinite; flex-shrink: 0; }
+  .dot:nth-child(2) { animation-delay: 0.2s; }
+  .dot:nth-child(3) { animation-delay: 0.4s; }
+
+  /* Rich AI bubble formatting */
+  .ai-bubble { max-width: 260px !important; padding: 14px 16px !important; }
+  .ai-bubble p { margin-bottom: 6px; line-height: 1.5; }
+  .ai-bubble p:last-child { margin-bottom: 0; }
+  .ai-bubble strong { color: var(--accent-dark); font-weight: 800; }
+  .ai-bubble .ai-list {
+    list-style: none; margin: 6px 0; padding: 0;
+    display: flex; flex-direction: column; gap: 5px;
+  }
+  .ai-bubble .ai-list li {
+    background: rgba(123,142,200,0.1);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 8px 8px 0;
+    padding: 6px 10px;
+    font-size: 13px; line-height: 1.4; color: var(--text);
+  }
+  .ai-bubble .ai-schedule-row {
+    background: linear-gradient(135deg, #e8edf8, #dde4f4);
+    border-radius: 10px; padding: 7px 10px;
+    font-size: 12px; font-weight: 700; color: var(--accent-dark);
+    margin: 4px 0; border: 1px solid rgba(123,142,200,0.2);
+  }
+  .chat-input-row {
+    padding: 8px 16px 10px; display: flex; gap: 10px; align-items: center;
+    flex-shrink: 0; background: transparent; position: relative; z-index: 1;
+  }
+  .chat-input {
+    flex: 1; background: rgba(255,255,255,0.85); border: 1.5px solid rgba(255,255,255,0.95);
+    border-radius: 50px; padding: 13px 18px 13px 42px;
+    font-family: 'Nunito', sans-serif; font-size: 14px; color: var(--text); outline: none;
+    box-shadow: 0 2px 12px var(--shadow2); transition: border-color 0.2s;
+  }
+  .chat-input:focus { border-color: var(--accent2); }
+  .chat-input-wrap { flex: 1; position: relative; }
+  .chat-input-wrap .icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text3); font-size: 16px; }
+  .send-btn {
+    width: 46px; height: 46px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border: none; border-radius: 50%; color: white; font-size: 18px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: transform 0.15s; flex-shrink: 0;
+    box-shadow: 0 4px 16px var(--accent-glow);
+  }
+  .send-btn:active { transform: scale(0.9); }
+
+  /* ===================== SETTINGS SCREEN ===================== */
+  #screen-settings { background: linear-gradient(180deg, #dde3ee 0%, #d4dcea 100%); padding-bottom: 80px; overflow-y: auto; }
+  #screen-settings .orb1 { width:220px;height:220px;background:#bcc8e8;top:-60px;right:-60px;opacity:0.45; }
+  .settings-header { padding: 52px 22px 16px; display: flex; align-items: center; position: relative; z-index: 1; }
+  .settings-header .brand { font-family: 'Space Mono', monospace; font-size: 18px; font-weight: 700; color: var(--accent); letter-spacing: 2px; }
+  .profile-card {
+    margin: 0 16px 16px;
+    background: linear-gradient(135deg, #eef2fc 0%, #e4eaf8 100%);
+    border: 1px solid rgba(255,255,255,0.95);
+    border-radius: var(--radius); padding: 20px;
+    display: flex; align-items: center; gap: 16px;
+    box-shadow: 0 8px 28px var(--shadow2), inset 0 1px 0 white;
+    position: relative; z-index: 1;
+  }
+  .profile-avatar {
+    width: 72px; height: 72px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden; box-shadow: 0 4px 16px var(--accent-glow);
+    border: 3px solid white;
+  }
+  .profile-avatar svg { width: 72px; height: 72px; }
+  .profile-info h3 { font-size: 22px; font-weight: 900; color: var(--text); }
+  .profile-info p { font-size: 13px; color: var(--text3); margin-top: 2px; }
+  .profile-info a { display: block; color: var(--accent); font-size: 12px; font-weight: 700; margin-top: 5px; cursor: pointer; }
+  .settings-item {
+    margin: 0 16px 10px;
+    background: linear-gradient(135deg, #f4f6fb 0%, #edf0f8 100%);
+    border: 1px solid rgba(255,255,255,0.95);
+    border-radius: var(--radius-sm); padding: 18px 20px;
+    display: flex; align-items: center; gap: 14px;
+    cursor: pointer; transition: transform 0.15s, background 0.15s;
+    box-shadow: 0 4px 14px var(--shadow2); position: relative; z-index: 1;
+  }
+  .settings-item:active { transform: scale(0.98); background: linear-gradient(135deg, #edf0f8, #e4eaf4); }
+  .settings-icon { font-size: 22px; width: 28px; text-align: center; }
+  .settings-label { flex: 1; font-size: 16px; font-weight: 800; color: var(--text); }
+  .toggle {
+    width: 50px; height: 28px; background: #d0d8ee;
+    border-radius: 14px; position: relative; cursor: pointer; transition: background 0.3s;
+  }
+  .toggle.on { background: linear-gradient(135deg, var(--accent), var(--accent2)); box-shadow: 0 2px 8px var(--accent-glow); }
+  .toggle::after {
+    content: ''; position: absolute; width: 22px; height: 22px; background: white;
+    border-radius: 50%; top: 3px; left: 3px; transition: transform 0.3s;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+  }
+  .toggle.on::after { transform: translateX(22px); }
+  .chevron { color: var(--text3); font-size: 18px; }
+  .signout-btn {
+    margin: 20px 16px 0;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: white; border: none; border-radius: 50px;
+    width: calc(100% - 32px); padding: 16px;
+    font-family: 'Nunito', sans-serif; font-size: 16px; font-weight: 800; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    box-shadow: 0 8px 24px rgba(123,142,200,0.4); transition: transform 0.15s;
+    position: relative; z-index: 1;
+  }
+  .signout-btn:active { transform: scale(0.97); }
+
+  /* ===================== BOTTOM NAV ===================== */
+  .bottom-nav {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    background: rgba(236,240,252,0.95);
+    backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+    border-top: 1px solid rgba(255,255,255,0.8);
+    padding: 10px 16px 24px;
+    display: flex; align-items: center;
+    border-radius: 0 0 50px 50px; z-index: 10;
+    box-shadow: 0 -4px 20px rgba(100,120,180,0.08);
+  }
+  .nav-items {
+    flex: 1; display: flex; align-items: center; justify-content: space-around;
+    background: rgba(200,210,235,0.35); border: 1px solid rgba(255,255,255,0.7);
+    border-radius: 50px; padding: 8px 12px;
+  }
+  .nav-btn {
+    display: flex; flex-direction: column; align-items: center; gap: 3px;
+    cursor: pointer; padding: 6px 20px; border-radius: 50px;
+    transition: background 0.2s, transform 0.15s; background: transparent; border: none;
+  }
+  .nav-btn.active {
+    background: rgba(255,255,255,0.85);
+    box-shadow: 0 2px 12px rgba(100,120,180,0.15);
+    border: 1px solid rgba(255,255,255,0.9);
+  }
+  .nav-btn:active { transform: scale(0.9); }
+  .nav-icon { font-size: 18px; color: var(--text3); }
+  .nav-btn.active .nav-icon { color: var(--accent); }
+  .nav-label { font-size: 11px; font-weight: 700; color: var(--text3); }
+  .nav-btn.active .nav-label { color: var(--accent); }
+
+  /* ===================== ANIMATIONS ===================== */
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes fadeDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes bounce {
+    0%, 60%, 100% { transform: translateY(0); opacity: 0.5; }
+    30% { transform: translateY(-8px); opacity: 1; }
+  }
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-8px); }
+    40% { transform: translateX(8px); }
+    60% { transform: translateX(-5px); }
+    80% { transform: translateX(5px); }
+  }
+  @keyframes popIn {
+    from { opacity: 0; transform: scale(0.85) translateY(10px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+  }
+  .msg { animation: popIn 0.3s ease both; }
+</style>
+
+</head>
+<body>
+
+<div class="phone">
+
+  <!-- ==================== LOGIN SCREEN ==================== -->
+  <div id="screen-login" class="screen active">
+    <div class="orb orb1"></div>
+    <div class="orb orb2"></div>
+    <div class="login-logo">MOODIFY</div>
+    <div class="login-tagline">study smarter, feel better</div>
+    <div class="login-card">
+      <h2>Welcome Back!</h2>
+      <div class="input-wrap">
+        <span class="icon">🔍</span>
+        <input class="login-input" type="email" placeholder="Enter your email">
+      </div>
+      <div class="input-wrap">
+        <span class="icon">🔍</span>
+        <input class="login-input" type="password" placeholder="Enter your password">
+      </div>
+      <div class="forgot">Forgot password?</div>
+      <button class="btn-main" id="signin-btn" onclick="signIn()">Sign In</button>
+      <div id="signin-error" style="color:#c0392b;font-size:13px;font-weight:700;text-align:center;margin-top:10px;min-height:18px;"></div>
+      <div class="signup-text">Don't have an account? Sign up here</div>
+      <div class="divider"><span>or</span></div>
+      <div class="continue-text">Continue with:</div>
+      <div class="social-btns">
+        <button class="social-btn">
+          <svg width="24" height="24" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" fill="#1877F2"/></svg>
+        </button>
+        <button class="social-btn">
+          <svg width="24" height="24" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+        </button>
+        <button class="social-btn" style="background:#111; color:white;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="white"><path d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.603-3.369-1.342-3.369-1.342-.454-1.155-1.11-1.462-1.11-1.462-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.831.092-.646.35-1.086.636-1.336-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.268 2.75 1.026A9.578 9.578 0 0112 6.836c.85.004 1.705.114 2.504.336 1.909-1.294 2.747-1.026 2.747-1.026.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.578.688.48C19.138 20.161 22 16.416 22 12c0-5.523-4.477-10-10-10z"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="login-mascot">
+      <svg class="mascot-svg" viewBox="0 0 130 130" xmlns="http://www.w3.org/2000/svg">
+        <!-- Body -->
+        <ellipse cx="65" cy="75" rx="38" ry="42" fill="#f5f0f0"/>
+        <!-- Cheeks -->
+        <ellipse cx="45" cy="82" rx="10" ry="7" fill="#f4a6b0" opacity="0.6"/>
+        <ellipse cx="85" cy="82" rx="10" ry="7" fill="#f4a6b0" opacity="0.6"/>
+        <!-- Eyes -->
+        <circle cx="53" cy="72" r="8" fill="#1a1a2e"/>
+        <circle cx="77" cy="72" r="8" fill="#1a1a2e"/>
+        <circle cx="56" cy="69" r="2.5" fill="white"/>
+        <circle cx="80" cy="69" r="2.5" fill="white"/>
+        <!-- Smile -->
+        <path d="M56 88 Q65 96 74 88" stroke="#1a1a2e" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        <!-- Legs -->
+        <line x1="52" y1="114" x2="52" y2="125" stroke="#555" stroke-width="4" stroke-linecap="round"/>
+        <line x1="78" y1="114" x2="78" y2="125" stroke="#555" stroke-width="4" stroke-linecap="round"/>
+        <!-- Headphones -->
+        <path d="M30 68 Q30 35 65 35 Q100 35 100 68" stroke="#7b8ec8" stroke-width="9" fill="none" stroke-linecap="round"/>
+        <rect x="22" y="62" width="16" height="22" rx="8" fill="#7b8ec8"/>
+        <rect x="92" y="62" width="16" height="22" rx="8" fill="#7b8ec8"/>
+        <!-- Music notes -->
+        <text x="10" y="48" font-size="14" fill="white" opacity="0.7">♪</text>
+        <text x="100" y="38" font-size="12" fill="white" opacity="0.7">♫</text>
+        <text x="108" y="55" font-size="10" fill="white" opacity="0.6">♩</text>
+        <text x="22" y="32" font-size="10" fill="white" opacity="0.6">♬</text>
+      </svg>
+    </div>
+  </div>
+
+  <!-- ==================== HOME SCREEN ==================== -->
+  <div id="screen-home" class="screen">
+    <div class="orb orb1"></div>
+    <div class="orb orb2"></div>
+    <div class="top-bar">
+      <span class="brand">MOODIFY</span>
+      <span class="greeting">Good vibes 🎧</span>
+    </div>
+
+    <!-- Mood Slider Card -->
+    <div class="mood-card">
+      <h3>How are you feeling ?</h3>
+      <div class="mood-slider-row">
+        <div class="mood-num">1</div>
+        <input type="range" id="mood-slider" min="1" max="5" value="2" oninput="updateSlider(this)">
+        <div class="mood-num">5</div>
+      </div>
+      <button class="gen-btn" onclick="generateSong()">Generate Song</button>
+    </div>
+
+    <!-- Mini Music Player -->
+    <div class="mini-player" onclick="navigate('music')">
+      <div class="turntable-mini">
+        <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+          <rect x="5" y="5" width="70" height="70" rx="6" fill="#aaa"/>
+          <g class="vinyl" id="vinyl-mini">
+            <circle cx="40" cy="40" r="32" fill="#1a1a2e"/>
+            <circle cx="40" cy="40" r="24" fill="#2a2a40"/>
+            <circle cx="40" cy="40" r="16" fill="#1a1a2e"/>
+            <circle cx="40" cy="40" r="8" fill="#3a3a5a"/>
+            <circle cx="40" cy="40" r="4" fill="#dde3ee"/>
+          </g>
+          <line x1="58" y1="15" x2="50" y2="35" stroke="#333" stroke-width="3" stroke-linecap="round"/>
+          <circle cx="58" cy="15" r="6" fill="#888"/>
+        </svg>
+      </div>
+      <div class="mini-info">
+        <div class="track-name">Deep Focus<br>Mode</div>
+        <div class="genre">Lo-Fi Beats</div>
+        <div class="ai-badge">AI selected music</div>
+      </div>
+      <div class="play-mini-btn" onclick="event.stopPropagation(); togglePlay()">▶</div>
+      <div class="mini-progress"><div class="mini-progress-fill" id="mini-fill"></div></div>
+    </div>
+
+    <!-- Pomodoro + Mascot Row -->
+    <div class="home-row">
+      <div class="pomodoro-mini" onclick="navigate('pomodoro')">
+        <h4>Study Session</h4>
+        <div class="pomo-time" id="home-pomo-display">25:00</div>
+        <div class="pomo-btns">
+          <button class="pomo-btn-sm" onclick="event.stopPropagation(); pomodoroAction('start')">Start</button>
+          <button class="pomo-btn-sm" onclick="event.stopPropagation(); pomodoroAction('pause')">Pause</button>
+          <button class="pomo-btn-sm" onclick="event.stopPropagation(); pomodoroAction('reset')">Reset</button>
+        </div>
+      </div>
+      <div class="mascot-card">
+        <svg class="mascot-svg" viewBox="0 0 130 130" xmlns="http://www.w3.org/2000/svg">
+          <ellipse cx="65" cy="75" rx="38" ry="42" fill="#f5f0f0"/>
+          <ellipse cx="45" cy="82" rx="10" ry="7" fill="#f4a6b0" opacity="0.6"/>
+          <ellipse cx="85" cy="82" rx="10" ry="7" fill="#f4a6b0" opacity="0.6"/>
+          <circle cx="53" cy="72" r="8" fill="#1a1a2e"/>
+          <circle cx="77" cy="72" r="8" fill="#1a1a2e"/>
+          <circle cx="56" cy="69" r="2.5" fill="white"/>
+          <circle cx="80" cy="69" r="2.5" fill="white"/>
+          <path d="M56 88 Q65 96 74 88" stroke="#1a1a2e" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+          <line x1="52" y1="114" x2="52" y2="125" stroke="#555" stroke-width="4" stroke-linecap="round"/>
+          <line x1="78" y1="114" x2="78" y2="125" stroke="#555" stroke-width="4" stroke-linecap="round"/>
+          <path d="M30 68 Q30 35 65 35 Q100 35 100 68" stroke="#7b8ec8" stroke-width="9" fill="none" stroke-linecap="round"/>
+          <rect x="22" y="62" width="16" height="22" rx="8" fill="#7b8ec8"/>
+          <rect x="92" y="62" width="16" height="22" rx="8" fill="#7b8ec8"/>
+          <text x="10" y="48" font-size="14" fill="#7b8ec8" opacity="0.8">♪</text>
+          <text x="100" y="38" font-size="12" fill="#7b8ec8" opacity="0.8">♫</text>
+          <text x="108" y="55" font-size="10" fill="#7b8ec8" opacity="0.7">♩</text>
+          <text x="22" y="32" font-size="10" fill="#7b8ec8" opacity="0.7">♬</text>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Mood Modes -->
+    <div class="mood-modes">
+      <div class="mode-card active-mode" onclick="selectMode(this, 'Deep Focus')">
+        <div class="mode-icon">🎯</div>
+        <span>Deep Focus</span>
+      </div>
+      <div class="mode-card" onclick="selectMode(this, 'Calm Study')">
+        <div class="mode-icon">🌿</div>
+        <span>Calm Study</span>
+      </div>
+      <div class="mode-card" onclick="selectMode(this, 'Energy Boost')">
+        <div class="mode-icon">⚡</div>
+        <span>Energy Boost</span>
+      </div>
+    </div>
+
+    <!-- Bottom Nav -->
+    <div class="bottom-nav">
+      <div class="nav-items">
+        <button class="nav-btn active" onclick="navigate('home')">
+          <span class="nav-icon">◆</span>
+          <span class="nav-label">Home</span>
+        </button>
+        <button class="nav-btn" onclick="navigate('chat')">
+          <span class="nav-icon">●</span>
+          <span class="nav-label">Chat</span>
+        </button>
+        <button class="nav-btn" onclick="navigate('settings')">
+          <span class="nav-icon">⚙</span>
+          <span class="nav-label">Settings</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MUSIC SCREEN ==================== -->
+  <div id="screen-music" class="screen">
+    <div class="orb orb1"></div>
+    <button class="music-back-btn" onclick="navigate('home')">←</button>
+    <button class="music-playlist-btn" onclick="togglePlaylist()">☰</button>
+
+    <div style="height:52px;flex-shrink:0;"></div>
+    <div class="music-handle"></div>
+
+    <!-- Vinyl art -->
+    <div class="music-turntable">
+      <svg viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">
+        <rect x="10" y="10" width="220" height="220" rx="14" fill="#aaa" opacity="0.8"/>
+        <g id="vinyl-full" class="vinyl">
+          <circle cx="120" cy="120" r="100" fill="#1a1a2e"/>
+          <circle cx="120" cy="120" r="80" fill="#22223a"/>
+          <circle cx="120" cy="120" r="60" fill="#1a1a2e"/>
+          <circle cx="120" cy="120" r="40" fill="#2a2a45"/>
+          <circle cx="120" cy="120" r="20" fill="#1a1a2e"/>
+          <circle cx="120" cy="120" r="10" fill="#dde3ee"/>
+        </g>
+        <line x1="190" y1="30" x2="155" y2="100" stroke="#333" stroke-width="5" stroke-linecap="round"/>
+        <circle cx="190" cy="30" r="14" fill="#888"/>
+        <circle cx="190" cy="30" r="8" fill="#aaa"/>
+      </svg>
+    </div>
+
+    <div class="music-info">
+      <div class="music-title" id="music-title">Deep Focus Mode</div>
+      <div class="music-genre" id="music-genre">Lo-Fi Beats</div>
+      <div class="music-badge"><span class="ai-badge">AI selected music</span></div>
+    </div>
+
+    <!-- Hidden YouTube iframe (audio only, controlled via postMessage) -->
+    <div style="position:absolute;width:1px;height:1px;overflow:hidden;opacity:0;pointer-events:none;">
+      <audio id="audio-player" preload="none"></audio>
+    </div>
+
+    <!-- Progress bar -->
+    <div class="music-progress-wrap">
+      <input type="range" class="music-progress-bar" id="music-progress" value="0" min="0" max="100" oninput="seekTrack(this)">
+    </div>
+    <div class="music-times">
+      <span id="music-current">0:00</span>
+      <span id="music-total">0:00</span>
+    </div>
+
+    <!-- Controls -->
+    <div class="music-controls">
+      <button class="ctrl-btn" onclick="prevTrack()">⏮</button>
+      <button class="ctrl-play" id="music-play-btn" onclick="togglePlay()">▶</button>
+      <button class="ctrl-btn" onclick="nextTrack()">⏭</button>
+    </div>
+
+    <!-- Volume -->
+    <div class="volume-row">
+      <span class="vol-icon">🔇</span>
+      <input type="range" class="vol-slider" id="vol-slider" value="80" min="0" max="100" oninput="updateVolume(this)">
+      <span class="vol-icon">🔊</span>
+    </div>
+
+    <!-- Playlist drawer -->
+    <div class="playlist-drawer" id="playlist-drawer">
+      <div class="playlist-handle" onclick="togglePlaylist()"></div>
+      <div class="playlist-title">🎵 Playlist — tap to switch track</div>
+      <div class="playlist-list" id="playlist-list"></div>
+    </div>
+  </div>
+
+  <!-- ==================== POMODORO SCREEN ==================== -->
+  <div id="screen-pomodoro" class="screen">
+    <div class="orb orb1"></div>
+    <div class="orb orb2"></div>
+    <button class="pomo-back-btn" onclick="navigate('home')">←</button>
+    <button class="pomo-fullscreen-btn" onclick="navigate('pomodoro-full')" title="Full Screen">⛶</button>
+    <div class="pomo-clock-card">
+      <div class="pomo-label">Study Session</div>
+      <div class="pomo-clock" id="pomo-clock">25:00</div>
+    </div>
+    <div class="pomo-controls" style="margin-bottom: 24px;">
+      <button class="pomo-ctrl-btn" onclick="pomodoroAction('start')">Start</button>
+      <button class="pomo-ctrl-btn" onclick="pomodoroAction('pause')">Pause</button>
+      <button class="pomo-ctrl-btn" onclick="pomodoroAction('reset')">Reset</button>
+    </div>
+    <button class="pomo-set-time" onclick="openSetTimeModal()">+Set new time</button>
+
+    <!-- Set Time Modal -->
+    <div class="modal-overlay" id="set-time-modal" onclick="closeSetTimeModal(event)">
+      <div class="modal-sheet">
+        <div class="modal-handle"></div>
+        <div class="modal-title">Set Study Time</div>
+        <div class="time-input-row">
+          <input type="number" class="time-input" id="min-input" value="25" min="1" max="99">
+          <span class="time-sep">:</span>
+          <input type="number" class="time-input" id="sec-input" value="00" min="0" max="59">
+        </div>
+        <button class="modal-set-btn" onclick="applyNewTime()">Set Time</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== POMODORO FULL SCREEN ==================== -->
+  <div id="screen-pomodoro-full" class="screen">
+    <div class="orb orb1"></div>
+    <div class="pomo-full-clock" id="pomo-full-clock">25:00</div>
+    <div class="pomo-controls">
+      <button class="pomo-ctrl-btn" onclick="pomodoroAction('start')">Start</button>
+      <button class="pomo-ctrl-btn" onclick="pomodoroAction('pause')">Pause</button>
+      <button class="pomo-ctrl-btn" onclick="pomodoroAction('reset')">Reset</button>
+    </div>
+    <button class="pomo-set-time" style="margin-top:20px;" onclick="openSetTimeModal()">+Set new time</button>
+    <button class="pomo-full-close" onclick="navigate('pomodoro')">✕</button>
+  </div>
+
+  <!-- ==================== CHAT SCREEN ==================== -->
+  <div id="screen-chat" class="screen">
+    <div class="orb orb1"></div>
+    <div class="chat-header">
+      <span class="brand">MOODIFY</span>
+    </div>
+    <div class="chat-title-pill">AI Study Assistant</div>
+    <div class="chat-messages" id="chat-messages">
+      <div class="msg">
+        <div class="msg-avatar">
+          <svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="20" cy="20" r="20" fill="#8b9fd4"/>
+            <ellipse cx="20" cy="24" rx="11" ry="12" fill="#f5f0f0"/>
+            <ellipse cx="14" cy="26" rx="3" ry="2" fill="#f4a6b0" opacity="0.6"/>
+            <ellipse cx="26" cy="26" rx="3" ry="2" fill="#f4a6b0" opacity="0.6"/>
+            <circle cx="16" cy="22" r="3" fill="#1a1a2e"/>
+            <circle cx="24" cy="22" r="3" fill="#1a1a2e"/>
+            <circle cx="17" cy="21" r="1" fill="white"/>
+            <circle cx="25" cy="21" r="1" fill="white"/>
+            <path d="M16 28 Q20 32 24 28" stroke="#1a1a2e" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+            <path d="M10 20 Q10 10 20 10 Q30 10 30 20" stroke="#5a6fa8" stroke-width="4" fill="none" stroke-linecap="round"/>
+            <rect x="7" y="18" width="6" height="8" rx="3" fill="#5a6fa8"/>
+            <rect x="27" y="18" width="6" height="8" rx="3" fill="#5a6fa8"/>
+            <text x="3" y="12" font-size="5" fill="white" opacity="0.8">♪</text>
+            <text x="31" y="10" font-size="4" fill="white" opacity="0.8">♫</text>
+          </svg>
+        </div>
+        <div class="msg-bubble">Hello! How can I help with your study session?</div>
+      </div>
+    </div>
+    <div class="chat-input-row">
+      <div class="chat-input-wrap">
+        <span class="icon">🔍</span>
+        <input class="chat-input" id="chat-input" type="text" placeholder="Type a message..." onkeydown="if(event.key==='Enter') sendMessage()">
+      </div>
+      <button class="send-btn" onclick="sendMessage()">➤</button>
+    </div>
+    <!-- Bottom Nav -->
+    <div class="bottom-nav">
+      <div class="nav-items">
+        <button class="nav-btn" onclick="navigate('home')">
+          <span class="nav-icon">◆</span>
+          <span class="nav-label">Home</span>
+        </button>
+        <button class="nav-btn active" onclick="navigate('chat')">
+          <span class="nav-icon">●</span>
+          <span class="nav-label">Chat</span>
+        </button>
+        <button class="nav-btn" onclick="navigate('settings')">
+          <span class="nav-icon">⚙</span>
+          <span class="nav-label">Settings</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== SETTINGS SCREEN ==================== -->
+  <div id="screen-settings" class="screen">
+    <div class="orb orb1"></div>
+    <div class="settings-header">
+      <span class="brand">MOODIFY</span>
+    </div>
+    <div class="profile-card">
+      <div class="profile-avatar">
+        <svg viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="36" cy="36" r="36" fill="#8b9fd4"/>
+          <ellipse cx="36" cy="44" rx="20" ry="22" fill="#f5f0f0"/>
+          <ellipse cx="25" cy="49" rx="6" ry="4" fill="#f4a6b0" opacity="0.6"/>
+          <ellipse cx="47" cy="49" rx="6" ry="4" fill="#f4a6b0" opacity="0.6"/>
+          <circle cx="29" cy="40" r="6" fill="#1a1a2e"/>
+          <circle cx="43" cy="40" r="6" fill="#1a1a2e"/>
+          <circle cx="31" cy="38" r="2" fill="white"/>
+          <circle cx="45" cy="38" r="2" fill="white"/>
+          <path d="M28 52 Q36 58 44 52" stroke="#1a1a2e" stroke-width="2" fill="none" stroke-linecap="round"/>
+          <path d="M16 38 Q16 20 36 20 Q56 20 56 38" stroke="#5a6fa8" stroke-width="7" fill="none" stroke-linecap="round"/>
+          <rect x="11" y="34" width="10" height="14" rx="5" fill="#5a6fa8"/>
+          <rect x="51" y="34" width="10" height="14" rx="5" fill="#5a6fa8"/>
+          <text x="5" y="20" font-size="8" fill="white" opacity="0.8">♪</text>
+          <text x="56" y="16" font-size="7" fill="white" opacity="0.8">♫</text>
+          <text x="62" y="28" font-size="6" fill="white" opacity="0.7">♩</text>
+          <text x="8" y="10" font-size="7" fill="white" opacity="0.7">♬</text>
+        </svg>
+      </div>
+      <div class="profile-info">
+        <h3>Melo</h3>
+        <p><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="caa4a5a7aba3a68aada7aba3a6e4a9a5a7">[email&#160;protected]</a></p>
+        <a>Edit Icon ✏️</a>
+        <a>Edit name ✏️</a>
+      </div>
+    </div>
+
+    <div class="settings-item" onclick="toggleSetting('dark-toggle')">
+      <span class="settings-icon">🌙</span>
+      <span class="settings-label">Dark Mood</span>
+      <div class="toggle" id="dark-toggle"></div>
+    </div>
+    <div class="settings-item" onclick="toggleSetting('sound-toggle')">
+      <span class="settings-icon">🔊</span>
+      <span class="settings-label">Sound Effects</span>
+      <div class="toggle" id="sound-toggle"></div>
+    </div>
+    <div class="settings-item">
+      <span class="settings-icon">❓</span>
+      <span class="settings-label">Help Center</span>
+      <span class="chevron">›</span>
+    </div>
+    <div class="settings-item">
+      <span class="settings-icon">💬</span>
+      <span class="settings-label">Feedback</span>
+      <span class="chevron">›</span>
+    </div>
+
+    <button class="signout-btn" onclick="navigate('login')">
+      <span>⬚</span> Sign Out
+    </button>
+
+    <!-- Bottom Nav -->
+    <div class="bottom-nav">
+      <div class="nav-items">
+        <button class="nav-btn" onclick="navigate('home')">
+          <span class="nav-icon">◆</span>
+          <span class="nav-label">Home</span>
+        </button>
+        <button class="nav-btn" onclick="navigate('chat')">
+          <span class="nav-icon">●</span>
+          <span class="nav-label">Chat</span>
+        </button>
+        <button class="nav-btn active" onclick="navigate('settings')">
+          <span class="nav-icon">⚙</span>
+          <span class="nav-label">Settings</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div><!-- end phone -->
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+  // ==================== NAVIGATION ====================
+  let currentScreen = 'login';
+
+  function navigate(id) {
+    if (!id || currentScreen === id) return;
+    const prev = document.getElementById('screen-' + currentScreen);
+    const next = document.getElementById('screen-' + id);
+    if (!prev || !next) return;
+
+    prev.classList.add('slide-left');
+    prev.classList.remove('active');
+    setTimeout(() => prev.classList.remove('slide-left'), 350);
+
+    next.classList.add('active');
+
+    currentScreen = id;
+    updateNavActive(id);
+  }
+
+  function updateNavActive(id) {
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    const map = { home: 0, chat: 1, settings: 2 };
+    if (id in map) {
+      const navs = document.querySelectorAll('#screen-' + id + ' .nav-btn');
+      if (navs[map[id]]) navs[map[id]].classList.add('active');
+    }
+  }
+
+  // ==================== MOOD SLIDER ====================
+  function updateSlider(input) {
+    const val = ((input.value - 1) / 4) * 100;
+    input.style.background = `linear-gradient(to right, var(--accent) ${val}%, #d0d6ea ${val}%)`;
+  }
+
+  function generateSong() {
+    const btn = document.querySelector('.gen-btn');
+    const moodVal = parseInt(document.getElementById('mood-slider').value) - 1;
+    const moodMap = [0, 2, 5, 7, 4];
+    btn.textContent = '✓ Generated!';
+    btn.style.background = '#5a8a6a';
+    setTimeout(() => { btn.textContent = 'Generate Song'; btn.style.background = ''; }, 1500);
+    loadTrack(moodMap[moodVal], true);
+    navigate('music');
+  }
+
+  // ==================== MUSIC PLAYER (HTML Audio) ====================
+  // Free lo-fi MP3 streams from archive.org & other open sources
+  const TRACKS = [
+    {
+      title: 'Chill Lofi Study',
+      artist: 'Lofi Hip Hop',
+      url: 'https://archive.org/download/lofi-study-beats/lofi_study_1.mp3',
+      fallback: 'https://cdn.freesound.org/previews/612/612095_5674468-lq.mp3'
+    },
+    {
+      title: 'Late Night Focus',
+      artist: 'Chillhop',
+      url: 'https://archive.org/download/lofi-study-beats/lofi_study_2.mp3',
+      fallback: 'https://cdn.freesound.org/previews/528/528491_3797507-lq.mp3'
+    },
+    {
+      title: 'Rainy Café',
+      artist: 'Cozy Beats',
+      url: 'https://cdn.freesound.org/previews/612/612095_5674468-lq.mp3',
+      fallback: null
+    },
+    {
+      title: 'Morning Coffee',
+      artist: 'Lofi Dreamer',
+      url: 'https://cdn.freesound.org/previews/528/528491_3797507-lq.mp3',
+      fallback: null
+    },
+    {
+      title: 'Deep Focus',
+      artist: 'Study Beats',
+      url: 'https://cdn.freesound.org/previews/456/456792_5121236-lq.mp3',
+      fallback: null
+    },
+    {
+      title: 'Tokyo Nights',
+      artist: 'Asian Lofi',
+      url: 'https://cdn.freesound.org/previews/399/399934_4473927-lq.mp3',
+      fallback: null
+    },
+    {
+      title: 'Pixel Dreams',
+      artist: 'ChilledCow',
+      url: 'https://cdn.freesound.org/previews/416/416577_5121236-lq.mp3',
+      fallback: null
+    },
+    {
+      title: 'Energy Boost',
+      artist: 'Study Beats',
+      url: 'https://cdn.freesound.org/previews/414/414209_5121236-lq.mp3',
+      fallback: null
+    },
+  ];
+
+  let currentTrackIdx = 0;
+  let isPlaying = false;
+  let progressTick = null;
+  const audio = document.getElementById('audio-player');
+
+  // Wire up audio events
+  audio.addEventListener('play',  () => setPlayingUI(true));
+  audio.addEventListener('pause', () => setPlayingUI(false));
+  audio.addEventListener('ended', () => nextTrack());
+  audio.addEventListener('timeupdate', updateProgress);
+  audio.addEventListener('loadedmetadata', () => {
+    document.getElementById('music-total').textContent = fmt(audio.duration);
+  });
+  audio.addEventListener('error', () => {
+    // Try fallback URL if available
+    const t = TRACKS[currentTrackIdx];
+    if (t.fallback && audio.src !== t.fallback) {
+      audio.src = t.fallback;
+      audio.play();
+    }
+  });
+  audio.volume = 0.8;
+
+  function togglePlay() {
+    if (!audio.src || audio.src === window.location.href) {
+      // No track loaded yet — load first track
+      loadTrack(0, true);
+      return;
+    }
+    isPlaying ? audio.pause() : audio.play();
+  }
+
+  function setPlayingUI(playing) {
+    isPlaying = playing;
+    document.getElementById('music-play-btn').textContent = playing ? '⏸' : '▶';
+    const mini = document.querySelector('.play-mini-btn');
+    if (mini) mini.textContent = playing ? '⏸' : '▶';
+    const vinylMini = document.getElementById('vinyl-mini');
+    const vinylFull  = document.getElementById('vinyl-full');
+    playing ? vinylMini?.classList.add('playing')    : vinylMini?.classList.remove('playing');
+    playing ? vinylFull?.classList.add('playing')     : vinylFull?.classList.remove('playing');
+  }
+
+  function updateProgress() {
+    const cur = audio.currentTime || 0;
+    const dur = isFinite(audio.duration) ? audio.duration : 0;
+    if (dur > 0) {
+      const pct = (cur / dur) * 100;
+      const prog = document.getElementById('music-progress');
+      if (prog) { prog.value = pct; updateMusicProgress(prog); }
+      const fill = document.getElementById('mini-fill');
+      if (fill) fill.style.width = pct + '%';
+    }
+    document.getElementById('music-current').textContent = fmt(cur);
+    if (dur > 0) document.getElementById('music-total').textContent = fmt(dur);
+  }
+
+  function fmt(s) {
+    if (!isFinite(s)) return '∞';
+    s = Math.floor(s);
+    return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
+  }
+
+  function seekTrack(input) {
+    updateMusicProgress(input);
+    if (isFinite(audio.duration)) {
+      audio.currentTime = (input.value / 100) * audio.duration;
+    }
+  }
+
+  function updateMusicProgress(input) {
+    const v = input.value;
+    input.style.background = `linear-gradient(to right, var(--text) ${v}%, rgba(100,120,180,0.25) ${v}%)`;
+  }
+
+  function updateVolume(input) {
+    const v = input.value;
+    input.style.background = `linear-gradient(to right, var(--accent2) ${v}%, rgba(100,120,180,0.25) ${v}%)`;
+    audio.volume = v / 100;
+  }
+
+  function loadTrack(idx, autoplay) {
+    currentTrackIdx = idx;
+    const t = TRACKS[idx];
+    // Update labels
+    document.getElementById('music-title').textContent = t.title;
+    document.getElementById('music-genre').textContent = t.artist;
+    document.getElementById('music-current').textContent = '0:00';
+    document.getElementById('music-total').textContent = '…';
+    const prog = document.getElementById('music-progress');
+    if (prog) { prog.value = 0; updateMusicProgress(prog); }
+    const fill = document.getElementById('mini-fill');
+    if (fill) fill.style.width = '0%';
+    document.querySelectorAll('.track-name').forEach(el => el.textContent = t.title);
+    document.querySelectorAll('.genre').forEach(el => el.textContent = t.artist);
+    // Load audio
+    audio.src = t.url;
+    if (autoplay) audio.play();
+    // Highlight playlist
+    document.querySelectorAll('.playlist-item').forEach((el, i) => {
+      el.classList.toggle('playing', i === idx);
+      el.querySelector('.playlist-num').textContent = i === idx ? '▶' : i + 1;
+    });
+  }
+
+  function prevTrack() { loadTrack((currentTrackIdx - 1 + TRACKS.length) % TRACKS.length, isPlaying); }
+  function nextTrack() { loadTrack((currentTrackIdx + 1) % TRACKS.length, true); }
+
+  function togglePlaylist() {
+    document.getElementById('playlist-drawer').classList.toggle('open');
+  }
+
+  function buildPlaylist() {
+    const list = document.getElementById('playlist-list');
+    if (!list) return;
+    list.innerHTML = '';
+    TRACKS.forEach((t, i) => {
+      const div = document.createElement('div');
+      div.className = 'playlist-item' + (i === 0 ? ' playing' : '');
+      div.id = 'pli-' + i;
+      div.innerHTML = `
+        <div class="playlist-num">${i === 0 ? '▶' : i + 1}</div>
+        <div class="playlist-item-info">
+          <div class="playlist-item-title">${t.title}</div>
+          <div class="playlist-item-artist">${t.artist}</div>
+        </div>`;
+      div.onclick = () => { loadTrack(i, true); togglePlaylist(); };
+      list.appendChild(div);
+    });
+  }
+
+  function selectMode(el, mode) {
+    document.querySelectorAll('.mode-card').forEach(c => c.classList.remove('active-mode'));
+    el.classList.add('active-mode');
+    const map = { 'Deep Focus': 0, 'Calm Study': 2, 'Energy Boost': 7 };
+    if (map[mode] !== undefined) loadTrack(map[mode], isPlaying);
+  }
+
+  buildPlaylist();
+
+  // ==================== POMODORO ====================
+  let pomoTime = 25 * 60;
+  let pomoRunning = false;
+  let pomoInterval = null;
+
+  function renderPomo() {
+    const m = Math.floor(pomoTime / 60);
+    const s = pomoTime % 60;
+    const str = (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
+    const els = ['pomo-clock', 'home-pomo-display', 'pomo-full-clock'];
+    els.forEach(id => { const el = document.getElementById(id); if (el) el.textContent = str; });
+  }
+
+  function pomodoroAction(action) {
+    if (action === 'start' && !pomoRunning) {
+      pomoRunning = true;
+      pomoInterval = setInterval(() => {
+        if (pomoTime > 0) { pomoTime--; renderPomo(); }
+        else { clearInterval(pomoInterval); pomoRunning = false; }
+      }, 1000);
+    } else if (action === 'pause') {
+      clearInterval(pomoInterval);
+      pomoRunning = false;
+    } else if (action === 'reset') {
+      clearInterval(pomoInterval);
+      pomoRunning = false;
+      pomoTime = 25 * 60;
+      renderPomo();
+    }
+  }
+
+  function openSetTimeModal() {
+    document.getElementById('set-time-modal').classList.add('open');
+  }
+
+  function closeSetTimeModal(e) {
+    if (e.target === document.getElementById('set-time-modal')) {
+      document.getElementById('set-time-modal').classList.remove('open');
+    }
+  }
+
+  function applyNewTime() {
+    const mins = parseInt(document.getElementById('min-input').value) || 25;
+    const secs = parseInt(document.getElementById('sec-input').value) || 0;
+    clearInterval(pomoInterval);
+    pomoRunning = false;
+    pomoTime = mins * 60 + secs;
+    renderPomo();
+    document.getElementById('set-time-modal').classList.remove('open');
+  }
+
+  // ==================== AI CHAT ====================
+  let chatHistory = [];
+
+  async function sendMessage() {
+    const input = document.getElementById('chat-input');
+    const text = input.value.trim();
+    if (!text) return;
+    input.value = '';
+
+    addMsg('user', text);
+    chatHistory.push({ role: 'user', content: text });
+
+    const typing = addTyping();
+
+    // Simulate thinking delay
+    await new Promise(r => setTimeout(r, 1200 + Math.random() * 800));
+    typing.remove();
+
+    const reply = generateReply(text);
+    chatHistory.push({ role: 'assistant', content: reply });
+    addMsg('ai', reply);
+  }
+
+  function generateReply(msg) {
+    const m = msg.toLowerCase();
+
+    // Assignment / homework / due
+    if (m.match(/assignment|homework|due|submit|deadline/)) {
+      const count = (m.match(/\d+/) || [''])[0];
+      const subject = m.match(/math|science|history|english|biology|chemistry|physics|essay|report|project/) ?
+        m.match(/math|science|history|english|biology|chemistry|physics|essay|report|project/)[0] : 'your work';
+      if (m.match(/tomorrow|tonight|today/)) {
+        return `Okay, let's crush this! 💪 Here's a quick plan for ${subject}:\n• **Start now** — open it up, read the full task\n• **Set a 25-min timer** — write or solve as much as you can\n• **Take a 5-min break**, then one more focused round\n• **Review & submit** — don't aim for perfect, aim for done!\n\nYou've got this — start the Pomodoro timer now! 🍅`;
+      }
+      if (count) {
+        return `${count} assignments — totally manageable! Here's how to tackle them:\n• **List them** by deadline, hardest first\n📅 Day 1: Focus on the most urgent one\n📅 Day 2: Work through the next two\n📅 Day 3: Polish & submit everything\n\n• Use **25-min Pomodoro sessions** per subject\n• **Reward yourself** after each one ✅\n\nSmall steps = big results! You've got this 🌟`;
+      }
+      return `Let's make a plan! 📋\n• **Write down** every assignment and its deadline\n• **Rank them** — most urgent goes first\n• **Block study time** — 25 mins on, 5 mins off\n📅 Tonight: Tackle assignment #1\n📅 Tomorrow: Finish the rest\n\nTurn on the Pomodoro timer and let's go! 🍅`;
+    }
+
+    // Stressed / overwhelmed / anxious
+    if (m.match(/stress|overwhelm|anxious|anxiety|panic|scared|worried|nervous/)) {
+      return `Hey, it's okay — feeling overwhelmed is totally normal 💙\n\n• **Take 3 deep breaths** right now, seriously\n• **Write down** everything on your mind — empty your head onto paper\n• **Pick just ONE thing** to focus on today\n• Break it into the **smallest possible step**\n\nYou don't have to do it all at once. One thing, one hour, one breath. The music here is your study buddy — turn it on and just start 🎧`;
+    }
+
+    // Can't focus / distracted / procrastinating
+    if (m.match(/focus|concentrate|distract|procrastinat|can't study|cannot study|dont want|don't want/)) {
+      return `Focus mode: activated! 🎯 Here's what actually works:\n\n• **Remove your phone** from your desk — put it in another room\n• **Start with 10 minutes only** — tell yourself just 10 mins\n• **Use lo-fi music** — it's literally designed for focus 🎵\n• **Write your goal** on paper before starting\n\n📅 Next 25 mins: One task only, no switching\n\nStart tiny, build momentum. Hit play on Deep Focus Mode! 🚀`;
+    }
+
+    // Exam / test / quiz / study
+    if (m.match(/exam|test|quiz|study|review|revision|prepare/)) {
+      const days = (m.match(/(\d+)\s*day/) || ['',''])[1];
+      if (days) {
+        return `${days} days to go — perfect amount of time! 📚\n📅 Days 1-${Math.floor(days/2)}: **Review all notes**, make summary sheets\n📅 Days ${Math.floor(days/2)+1}-${days-1}: **Practice problems** & past papers\n📅 Day ${days}: **Light review only** + rest well 😴\n\n• Use **active recall** — quiz yourself, don't just re-read\n• **Teach the concept out loud** to nobody — it works!\n• 25-min study blocks with 5-min breaks\n\nYou'll be ready. Let's start now! 💪`;
+      }
+      return `Let's build your study strategy! 🧠\n\n• **Active recall** beats re-reading every time — close notes and test yourself\n• **Spaced repetition** — review today, again in 2 days, again in 5\n• **Practice problems** > highlighting text\n• **Teach it out loud** — if you can explain it, you know it\n\n📅 Session 1: Read & summarise\n📅 Session 2: Quiz yourself\n📅 Session 3: Practice problems\n\nStart your Pomodoro now! 🍅`;
+    }
+
+    // Tired / sleep / energy
+    if (m.match(/tired|sleepy|exhausted|no energy|sleep|fatigue/)) {
+      return `Your brain needs fuel! 🔋 Here's what to do:\n\n• **10-min power nap** if you can — set an alarm!\n• **Drink water** right now — dehydration kills focus\n• **Step outside** for 5 mins — fresh air resets your brain\n• **Eat something light** — banana, nuts, or fruit\n\n• If you must study: keep sessions to **15 mins max** with breaks\n• Put on **calm lo-fi beats** to stay in the zone 🎶\n\nTake care of yourself first — you'll study better for it 💙`;
+    }
+
+    // Math specifically
+    if (m.match(/math|algebra|calculus|geometry|equation|formula|problem/)) {
+      return `Math mode ON! 🔢 Here's how to actually get good at it:\n\n• **Don't just read examples** — redo them yourself from scratch\n• **Work problems first**, then check answers\n• **Write out every step** — skipping steps = making mistakes\n• **Stuck on something?** Move on, come back later\n\n📅 Step 1: Re-read the concept (5 mins)\n📅 Step 2: Do 3 example problems (15 mins)\n📅 Step 3: Try the assignment problems (25 mins)\n\nMath is just practice. Start that timer! 💪`;
+    }
+
+    // Essay / writing
+    if (m.match(/essay|write|writing|paragraph|thesis|introduction|conclusion/)) {
+      return `Let's get that essay done! ✍️\n\n• **Don't start with the introduction** — write the body first\n• **Outline in 5 mins**: intro idea → 3 main points → conclusion\n• **Set a word goal** per Pomodoro session (e.g. 150 words)\n• **Write badly first** — editing comes later, not during!\n\n📅 Session 1: Outline + thesis statement\n📅 Session 2: Write body paragraphs\n📅 Session 3: Introduction + conclusion\n📅 Session 4: Edit & proofread\n\nWords on a page beat a blank page every time 🚀`;
+    }
+
+    // Motivation / give up
+    if (m.match(/motivat|give up|can't do|cannot do|too hard|hate school|hate studying/)) {
+      return `Hey — I hear you. It's hard sometimes 💙\n\n• Remember **why** you're doing this — write it down\n• You don't need to love it, you just need to **do it anyway**\n• **Every expert was once a beginner** — confusion = learning\n• Focus on **today only** — forget the whole semester\n\n• Start with **just 5 minutes** — seriously, only 5\n• Put on some **good music** and let your hands start\n\nYou've gotten through every hard day so far. This one is no different 🌟`;
+    }
+
+    // Break / rest
+    if (m.match(/break|rest|relax|pause|stop/)) {
+      return `Smart move — breaks make you more productive! 🌿\n\n• **5-min break**: stretch, drink water, look out a window\n• **15-min break**: walk around, eat a snack, breathe fresh air\n• **Avoid screens** during breaks — your brain needs real rest\n\n• Try the **20-20-20 rule**: every 20 mins, look at something 20 feet away for 20 seconds 👀\n\nA rested brain studies 2x better. Enjoy your break — you've earned it! 💚`;
+    }
+
+    // Greeting
+    if (m.match(/^(hi|hey|hello|sup|yo|hii|heyy)[\s!?]*$/)) {
+      return `Hey there! 👋 I'm Melo, your study buddy!\n\nI can help you with:\n• **Study plans** for assignments & exams\n• **Focus tips** when you can't concentrate\n• **Stress relief** strategies\n• **Time management** & scheduling\n\nWhat are you working on today? Tell me about your assignments and I'll build you a plan! 📚`;
+    }
+
+    // Thanks
+    if (m.match(/thank|thanks|thx|ty|appreciate/)) {
+      return `You're so welcome! 😊 That's what I'm here for!\n\nRemember:\n• **You've got what it takes** to get through this\n• Every study session — big or small — **counts**\n• I'm always here when you need a plan 🎯\n\nNow go smash those goals! 💪🌟`;
+    }
+
+    // Default fallback
+    const fallbacks = [
+      `Tell me more about what you're working on! 📚 If you share your subject, assignment, or deadline, I can build you a **custom study plan** right away.\n\nWhat's on your plate today?`,
+      `I'm here to help! 🎯 Try telling me:\n• **What subject** you're studying\n• **When it's due**\n• **How you're feeling** about it\n\nThen I'll give you a real step-by-step plan to crush it! 💪`,
+      `Got it! Here's my universal study tip 💡\n\n• **Start** — the hardest part is just beginning\n• **25-min blocks** — Pomodoro method works every time\n• **One task at a time** — no multitasking\n• **Reward yourself** after each session ✅\n\nWhat specific subject can I help you with? 📖`
+    ];
+    return fallbacks[Math.floor(Math.random() * fallbacks.length)];
+  }
+
+  // Converts plain text with markers into styled HTML
+  function renderText(text) {
+    // Escape HTML first
+    text = text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    // Bold **text**
+    text = text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    // Bullet lines starting with •
+    const lines = text.split('\n');
+    let html = '';
+    let inList = false;
+    for (let line of lines) {
+      line = line.trim();
+      if (!line) {
+        if (inList) { html += '</ul>'; inList = false; }
+        continue;
+      }
+      if (line.startsWith('• ') || line.startsWith('- ')) {
+        if (!inList) { html += '<ul class="ai-list">'; inList = true; }
+        html += `<li>${line.slice(2)}</li>`;
+      } else if (line.match(/^📅/)) {
+        if (inList) { html += '</ul>'; inList = false; }
+        html += `<div class="ai-schedule-row">${line}</div>`;
+      } else {
+        if (inList) { html += '</ul>'; inList = false; }
+        html += `<p>${line}</p>`;
+      }
+    }
+    if (inList) html += '</ul>';
+    return html;
+  }
+
+  function addMsg(type, text) {
+    const container = document.getElementById('chat-messages');
+    const div = document.createElement('div');
+    div.className = 'msg' + (type === 'user' ? ' user' : '');
+    const avatarSVG = `<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="20" cy="20" r="20" fill="#8b9fd4"/>
+      <ellipse cx="20" cy="24" rx="11" ry="12" fill="#f5f0f0"/>
+      <ellipse cx="14" cy="26" rx="3" ry="2" fill="#f4a6b0" opacity="0.6"/>
+      <ellipse cx="26" cy="26" rx="3" ry="2" fill="#f4a6b0" opacity="0.6"/>
+      <circle cx="16" cy="22" r="3" fill="#1a1a2e"/>
+      <circle cx="24" cy="22" r="3" fill="#1a1a2e"/>
+      <circle cx="17" cy="21" r="1" fill="white"/>
+      <circle cx="25" cy="21" r="1" fill="white"/>
+      <path d="M16 28 Q20 32 24 28" stroke="#1a1a2e" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+      <path d="M10 20 Q10 10 20 10 Q30 10 30 20" stroke="#5a6fa8" stroke-width="4" fill="none" stroke-linecap="round"/>
+      <rect x="7" y="18" width="6" height="8" rx="3" fill="#5a6fa8"/>
+      <rect x="27" y="18" width="6" height="8" rx="3" fill="#5a6fa8"/>
+    </svg>`;
+    if (type === 'ai') {
+      div.innerHTML = `
+        <div class="msg-avatar">${avatarSVG}</div>
+        <div class="msg-bubble ai-bubble">${renderText(text)}</div>`;
+    } else {
+      div.innerHTML = `<div class="msg-bubble">${text}</div>`;
+    }
+    container.appendChild(div);
+    container.scrollTop = container.scrollHeight;
+    return div;
+  }
+
+  function addTyping() {
+    const container = document.getElementById('chat-messages');
+    const div = document.createElement('div');
+    div.className = 'msg';
+    div.innerHTML = `
+      <div class="msg-avatar">
+        <svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="20" cy="20" r="20" fill="#8b9fd4"/>
+          <ellipse cx="20" cy="24" rx="11" ry="12" fill="#f5f0f0"/>
+          <circle cx="16" cy="22" r="3" fill="#1a1a2e"/>
+          <circle cx="24" cy="22" r="3" fill="#1a1a2e"/>
+          <path d="M10 20 Q10 10 20 10 Q30 10 30 20" stroke="#5a6fa8" stroke-width="4" fill="none" stroke-linecap="round"/>
+          <rect x="7" y="18" width="6" height="8" rx="3" fill="#5a6fa8"/>
+          <rect x="27" y="18" width="6" height="8" rx="3" fill="#5a6fa8"/>
+        </svg>
+      </div>
+      <div class="msg-bubble typing"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>`;
+    container.appendChild(div);
+    container.scrollTop = container.scrollHeight;
+    return div;
+  }
+
+  // ==================== SIGN IN ====================
+  function signIn() {
+    const email = document.querySelector('#screen-login input[type="email"]').value.trim();
+    const password = document.querySelector('#screen-login input[type="password"]').value.trim();
+    const error = document.getElementById('signin-error');
+    const btn = document.getElementById('signin-btn');
+
+    if (!email && !password) {
+      error.textContent = 'Please enter your email and password.';
+      shakeCard(); return;
+    }
+    if (!email) {
+      error.textContent = 'Please enter your email.';
+      shakeCard(); return;
+    }
+    if (!validateEmail(email)) {
+      error.textContent = 'Please enter a valid email address.';
+      shakeCard(); return;
+    }
+    if (!password) {
+      error.textContent = 'Please enter your password.';
+      shakeCard(); return;
+    }
+    if (password.length < 4) {
+      error.textContent = 'Password is too short.';
+      shakeCard(); return;
+    }
+
+    error.textContent = '';
+    btn.textContent = '✓ Signing in...';
+    btn.style.background = '#5a8a6a';
+    btn.disabled = true;
+    setTimeout(() => {
+      btn.textContent = 'Sign In';
+      btn.style.background = '';
+      btn.disabled = false;
+      navigate('home');
+    }, 900);
+  }
+
+  function validateEmail(e) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
+  }
+
+  function shakeCard() {
+    const card = document.querySelector('.login-card');
+    card.style.animation = 'none';
+    requestAnimationFrame(() => {
+      card.style.animation = 'shake 0.4s ease';
+      setTimeout(() => card.style.animation = '', 450);
+    });
+  }
+
+  updateSlider(document.getElementById('mood-slider'));
+</script>
+</body>
+</html>
